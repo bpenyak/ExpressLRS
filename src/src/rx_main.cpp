@@ -115,7 +115,14 @@ bool pwmSerialDefined = false;
 uint32_t serialBaud;
 
 /* SERIAL_PROTOCOL_TX is used by CRSF output */
+#if defined(DEV_USB_CRSF) && (defined(PLATFORM_ESP32_C3) || defined(PLATFORM_ESP32_S3))
+// Desk-dev: CRSF on native USB-CDC (Type-C). Do not mix with a flight controller on GPIO UART.
+#define SERIAL_PROTOCOL_TX USBSerial
+#define SERIAL_PROTOCOL_RX USBSerial
+#else
 #define SERIAL_PROTOCOL_TX Serial
+#define SERIAL_PROTOCOL_RX Serial
+#endif
 
 #if defined(PLATFORM_ESP32)
     #define SERIAL1_PROTOCOL_TX Serial1
@@ -129,7 +136,6 @@ uint32_t serialBaud;
 
 SerialIO *serialIO = nullptr;
 
-#define SERIAL_PROTOCOL_RX Serial
 #define SERIAL1_PROTOCOL_RX Serial1
 
 StubbornSender DataDlSender;
@@ -1366,7 +1372,12 @@ static void setupSerial()
     #endif
     // ARDUINO_CORE_INVERT_FIX PT2 end
 
+#if defined(DEV_USB_CRSF) && (defined(PLATFORM_ESP32_C3) || defined(PLATFORM_ESP32_S3))
+    // CRSF (and shared debug stream) on USB Type-C CDC for bench testing
+    USBSerial.begin(serialBaud);
+#else
     Serial.begin(serialBaud, serialConfig, GPIO_PIN_RCSIGNAL_RX, GPIO_PIN_RCSIGNAL_TX, invert);
+#endif
 #endif
 
     if (firmwareOptions.is_airport)
@@ -1391,9 +1402,14 @@ static void setupSerial()
     }
     else if (config.GetSerialProtocol() == PROTOCOL_GPS)
     {
+#if defined(DEV_USB_CRSF) && (defined(PLATFORM_ESP32_C3) || defined(PLATFORM_ESP32_S3))
+        // SerialGPS requires HardwareSerial; USB-CDC desk mode cannot host GPS protocol
+        serialIO = new SerialNOOP();
+#else
         // Serial(0) is always assigned in a way that it uses two pins, only Serial1 is allowed to not have both RX/TX
         const int8_t gpsTxPin = (GPIO_PIN_RCSIGNAL_TX == UNDEF_PIN) ? U0TXD_GPIO_NUM : GPIO_PIN_RCSIGNAL_TX;
         serialIO = new SerialGPS(SERIAL_PROTOCOL_RX, gpsTxPin);
+#endif
     }
     else if (hottTlmSerial)
     {

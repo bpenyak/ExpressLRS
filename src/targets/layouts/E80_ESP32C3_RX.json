@@ -1,0 +1,23 @@
+{
+  "serial_rx": 20,
+  "serial_tx": 21,
+  "radio_miso": 2,
+  "radio_mosi": 7,
+  "radio_sck": 4,
+  "radio_nss": 10,
+  "radio_rst": 0,
+  "radio_busy": 3,
+  "radio_dio1": 1,
+  "radio_tcxo": 2,
+  "radio_tcxo_delay": 100,
+  "radio_rfsw_ctrl": [3, 0, 0, 2, 1, 3, 0, 0],
+  "power_min": 0,
+  "power_default": 0,
+  "power_max": 1,
+  "power_control": 0,
+  "power_values": [10, 25],
+  "led": 8,
+  "led_red_invert": true,
+  "button": 9,
+  "notes": "E80-900M2213S (LR1121) on ESP32-C3 SuperMini. DIO9->GPIO1. No external TXEN/RXEN (internal RFSW). radio_rfsw_ctrl tuned for Ebyte DIO5/DIO6 table; verify on bench. DEV power 10/25 mW."
+}
