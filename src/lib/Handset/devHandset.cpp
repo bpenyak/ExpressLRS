@@ -9,7 +9,9 @@
 #include "CRSFEndpoint.h"
 #include "options.h"
 
-#if defined(PLATFORM_ESP32)
+#if defined(TARGET_TRUE_GEMINI_XROSSBAND_TX)
+#include "AdsCrsfMixHandset.h"
+#elif defined(PLATFORM_ESP32)
 #include "AutoDetect.h"
 #endif
 
@@ -17,7 +19,10 @@ Handset *handset;
 
 static bool initialize()
 {
-#if defined(PLATFORM_ESP32)
+#if defined(TARGET_TRUE_GEMINI_XROSSBAND_TX)
+    handset = new AdsCrsfMixHandset();
+    return true;
+#elif defined(PLATFORM_ESP32)
     if (GPIO_PIN_RCSIGNAL_RX == GPIO_PIN_RCSIGNAL_TX)
     {
         handset = new AutoDetect();
